@@ -40,7 +40,17 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
             Bukkit.getOnlinePlayers().forEach {
                 for(i in 1..36) {
                     if(it.inventory.getItem(i-1) != null) {
-                        it.inventory.setItem(i-1, e.inventory.getItem(0))
+                        val iItem = e.inventory.getItem(0)
+                        val item  = it.inventory.getItem(i-1)
+
+                        val amount = if(iItem!!.maxStackSize < item!!.amount) {
+                            iItem.maxStackSize
+                        }
+                        else {
+                            item.amount
+                        }
+
+                        it.inventory.setItem(i-1, ItemStack(iItem.type, amount))
                     }
                 }
             }
