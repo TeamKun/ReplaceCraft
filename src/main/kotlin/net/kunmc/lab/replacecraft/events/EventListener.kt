@@ -26,7 +26,6 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
 
                 if(item != null && 0 < item.amount - 1) {
                     val amount = item.amount - 1
-                    e.whoClicked.sendMessage("" + item)
                     e.inventory.setItem(i+1, ItemStack(resultItem!!.type, checkItemAmount(resultItem, amount)))
                 }
                 else {
