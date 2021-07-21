@@ -3,7 +3,6 @@ package net.kunmc.lab.replacecraft.commands
 import net.kunmc.lab.replacecraft.ReplaceCraftPlugin
 import net.kunmc.lab.replacecraft.util.*
 
-import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
