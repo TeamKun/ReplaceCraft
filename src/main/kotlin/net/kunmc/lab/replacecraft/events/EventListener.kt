@@ -48,17 +48,34 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
                     }
 
                     // クラフトインベントリ内のアイテム置き換え
-                    val cInv = it.openInventory.topInventory
-                    for(i in 1 until cInv.size) {
-                        val item = cInv.getItem(i)
+                    // クラフトしたプレイヤー以外
+                    if(e.whoClicked.uniqueId != it.uniqueId) {
+                        val cInv = it.openInventory.topInventory
+                        for(i in 1 until cInv.size) {
+                            val item = cInv.getItem(i)
 
-                        if(item != null && 0 < item.amount - 1) {
-                            it.sendMessage("item: ${item.type} amount: ${item.amount}")
-                            cInv.setItem(i, ItemStack(resultItem!!.type, checkItemAmount(resultItem, item) - 1))
+                            if(item != null && 0 < item.amount) {
+                                cInv.setItem(i, ItemStack(resultItem!!.type, checkItemAmount(resultItem, item)))
+                            }
+                            else {
+                                cInv.setItem(i, ItemStack(Material.AIR))
+                            }
                         }
-                        else {
-                            cInv.setItem(i, ItemStack(Material.AIR))
+                    }
+                    // クラフトをしたプレイヤー
+                    else {
+                        val cInv = it.openInventory.topInventory
+                        for(i in 1 until cInv.size) {
+                            val item = cInv.getItem(i)
+
+                            if(item != null && 0 < item.amount - 1) {
+                                cInv.setItem(i, ItemStack(resultItem!!.type, checkItemAmount(resultItem, item.amount - 1)))
+                            }
+                            else {
+                                cInv.setItem(i, ItemStack(Material.AIR))
+                            }
                         }
+                        it.openInventory.cursor = resultItem
                     }
                 }
             }
@@ -71,6 +88,14 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
         }
         else {
             item.amount
+        }
+    }
+    private fun checkItemAmount(iItem: ItemStack?, item: Int): Int {
+        return if(iItem!!.maxStackSize < item) {
+            iItem.maxStackSize
+        }
+        else {
+            item
         }
     }
 }
