@@ -5,6 +5,7 @@ import net.kunmc.lab.replacecraft.ReplaceCraftPlugin
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Material
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.CraftItemEvent
@@ -22,6 +23,90 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
 
             Bukkit.getOnlinePlayers().forEach {
                 if(it.gameMode != GameMode.CREATIVE && it.gameMode != GameMode.SPECTATOR) {
+                    // クラフトインベントリ内のアイテム置き換え
+                    // クラフトしたプレイヤー以外
+                    if(e.whoClicked.uniqueId != it.uniqueId) {
+                        val cInv = it.openInventory.topInventory
+
+                        for(i in 1 until cInv.size) {
+                            val item = cInv.getItem(i)
+
+                            if(item != null && 0 < item.amount) {
+                                cInv.setItem(i, ItemStack(resultItem!!.type, checkItemAmount(resultItem, item)))
+                            }
+                            else {
+                                cInv.setItem(i, ItemStack(Material.AIR))
+                            }
+                        }
+                    }
+                    // クラフトをしたプレイヤー
+                    else {
+                        val cInv = it.openInventory.topInventory
+                        var amount: Int = e.recipe.result.amount
+
+                        // シフトクリックでアイテムをクラフトした場合
+                        if(e.isShiftClick) {
+                            var max: Int = e.inventory.maxStackSize
+                            val matrix = e.inventory.matrix
+
+                            // クラフトしたアイテムの個数を計算
+                            for(i in matrix) {
+                                if(i != null) {
+                                    if(i.type == Material.AIR) {
+                                        continue
+                                    }
+                                    val tmp = i.amount
+                                    if(tmp in 1 until max) {
+                                        max = tmp
+                                    }
+                                }
+                            }
+                            amount *= max
+                            // ------ここまで------
+
+                            val space: Int = getSpaceSize(resultItem, it)
+                            // 空きがない場合クラフトできないのでイベントをキャンセル
+                            if(space == 0) {
+                                e.isCancelled = true
+                                return
+                            }
+
+                            // 空きスペースよりもクラフトアイテム数が多かった場合
+                            if(space < amount) {
+                                var tmp = space % resultItem!!.amount
+                                it.inventory.addItem(ItemStack(resultItem.type, space - tmp))
+
+                                tmp = space / resultItem.amount
+                                for(i in 1 until cInv.size) {
+                                    val item = cInv.getItem(i)
+
+                                    if(item != null && 0 < item.amount - tmp) {
+                                        cInv.setItem(i, ItemStack(resultItem.type, checkItemAmount(resultItem, item.amount - tmp)))
+                                    }
+                                    else {
+                                        cInv.setItem(i, ItemStack(Material.AIR))
+                                    }
+                                }
+                            }
+                            else {
+                                it.inventory.addItem(ItemStack(resultItem!!.type, amount))
+                            }
+                        }
+                        else {
+                            for(i in 1 until cInv.size) {
+                                val item = cInv.getItem(i)
+
+                                if(item != null && 0 < item.amount - 1) {
+                                    cInv.setItem(i, ItemStack(resultItem!!.type, checkItemAmount(resultItem, item.amount - 1)))
+                                }
+                                else {
+                                    cInv.setItem(i, ItemStack(Material.AIR))
+                                }
+                            }
+                            it.openInventory.cursor = resultItem
+                        }
+                    }
+
                     // カーソルのアイテム置き換え
                     val pInv = it.openInventory
                     if(pInv.cursor != null) {
@@ -47,36 +132,7 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
                         }
                     }
 
-                    // クラフトインベントリ内のアイテム置き換え
-                    // クラフトしたプレイヤー以外
-                    if(e.whoClicked.uniqueId != it.uniqueId) {
-                        val cInv = it.openInventory.topInventory
-                        for(i in 1 until cInv.size) {
-                            val item = cInv.getItem(i)
 
-                            if(item != null && 0 < item.amount) {
-                                cInv.setItem(i, ItemStack(resultItem!!.type, checkItemAmount(resultItem, item)))
-                            }
-                            else {
-                                cInv.setItem(i, ItemStack(Material.AIR))
-                            }
-                        }
-                    }
-                    // クラフトをしたプレイヤー
-                    else {
-                        val cInv = it.openInventory.topInventory
-                        for(i in 1 until cInv.size) {
-                            val item = cInv.getItem(i)
-
-                            if(item != null && 0 < item.amount - 1) {
-                                cInv.setItem(i, ItemStack(resultItem!!.type, checkItemAmount(resultItem, item.amount - 1)))
-                            }
-                            else {
-                                cInv.setItem(i, ItemStack(Material.AIR))
-                            }
-                        }
-                        it.openInventory.cursor = resultItem
-                    }
                 }
             }
         }
@@ -97,5 +153,22 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
         else {
             item
         }
+    }
+
+    // クラフトしたアイテムがインベントリに入る最大量の計算
+    private fun getSpaceSize(item: ItemStack?, p: Player): Int {
+        var size = 0
+        val inv = p.inventory
+
+        for(i in 1..36) {
+            val iItem: ItemStack? = inv.getItem(i-1)
+            if(iItem != null && item!!.type == iItem.type) {
+                size += iItem.maxStackSize - iItem.amount
+            }
+            else if(iItem == null) {
+                size += item!!.maxStackSize
+            }
+        }
+        return size
     }
 }
