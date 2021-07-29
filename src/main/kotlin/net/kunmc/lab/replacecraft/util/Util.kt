@@ -1,5 +1,6 @@
 package net.kunmc.lab.replacecraft.util
 
+import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.command.CommandSender
 
@@ -17,4 +18,10 @@ fun warn(sender: CommandSender, s: String) {
 
 fun error(sender: CommandSender, s: String) {
     sender.sendMessage("" + ChatColor.RED + "ERROR: " + s)
+}
+
+fun sendMsg(s: String) {
+    Bukkit.getOnlinePlayers().forEach {
+        it.sendMessage("" + s)
+    }
 }

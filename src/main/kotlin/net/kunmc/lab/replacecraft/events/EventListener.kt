@@ -1,8 +1,10 @@
 package net.kunmc.lab.replacecraft.events
 
 import net.kunmc.lab.replacecraft.ReplaceCraftPlugin
+import net.kunmc.lab.replacecraft.util.sendMsg
 
 import org.bukkit.Bukkit
+import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -20,6 +22,7 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
     fun onCraft(e: CraftItemEvent) {
         if(plugin.isEnable) {
             val resultItem = e.inventory.getItem(0)
+            sendMsg("" + ChatColor.GOLD + "${e.whoClicked.name}が${resultItem!!.type.name}をクラフトした！")
 
             Bukkit.getOnlinePlayers().forEach {
                 if(it.gameMode != GameMode.CREATIVE && it.gameMode != GameMode.SPECTATOR) {
@@ -32,7 +35,7 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
                             val item = cInv.getItem(i)
 
                             if(item != null && 0 < item.amount) {
-                                cInv.setItem(i, ItemStack(resultItem!!.type, checkItemAmount(resultItem, item)))
+                                cInv.setItem(i, ItemStack(resultItem.type, checkItemAmount(resultItem, item)))
                             }
                             else {
                                 cInv.setItem(i, ItemStack(Material.AIR))
@@ -73,7 +76,7 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
 
                             // 空きスペースよりもクラフトアイテム数が多かった場合
                             if(space < amount) {
-                                var tmp = space % resultItem!!.amount
+                                var tmp = space % resultItem.amount
                                 it.inventory.addItem(ItemStack(resultItem.type, space - tmp))
 
                                 tmp = space / resultItem.amount
@@ -89,7 +92,7 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
                                 }
                             }
                             else {
-                                it.inventory.addItem(ItemStack(resultItem!!.type, amount))
+                                it.inventory.addItem(ItemStack(resultItem.type, amount))
                             }
                         }
                         else {
@@ -97,7 +100,7 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
                                 val item = cInv.getItem(i)
 
                                 if(item != null && 0 < item.amount - 1) {
-                                    cInv.setItem(i, ItemStack(resultItem!!.type, checkItemAmount(resultItem, item.amount - 1)))
+                                    cInv.setItem(i, ItemStack(resultItem.type, checkItemAmount(resultItem, item.amount - 1)))
                                 }
                                 else {
                                     cInv.setItem(i, ItemStack(Material.AIR))
@@ -111,7 +114,7 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
                     val pInv = it.openInventory
                     if(pInv.cursor != null) {
                         val amount = checkItemAmount(resultItem, pInv.cursor)
-                        pInv.cursor = ItemStack(resultItem!!.type, amount)
+                        pInv.cursor = ItemStack(resultItem.type, amount)
                     }
 
                     // オフハンドのアイテム置き換え
@@ -119,7 +122,7 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
                         val item   = it.inventory.itemInOffHand
                         val amount = checkItemAmount(resultItem, item)
 
-                        it.inventory.setItemInOffHand(ItemStack(resultItem!!.type, amount))
+                        it.inventory.setItemInOffHand(ItemStack(resultItem.type, amount))
                     }
 
                     // インベントリ内のアイテム置き換え
@@ -128,7 +131,7 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
                             val item   = it.inventory.getItem(i-1)
                             val amount = checkItemAmount(resultItem, item)
 
-                            it.inventory.setItem(i-1, ItemStack(resultItem!!.type, amount))
+                            it.inventory.setItem(i-1, ItemStack(resultItem.type, amount))
                         }
                     }
 
