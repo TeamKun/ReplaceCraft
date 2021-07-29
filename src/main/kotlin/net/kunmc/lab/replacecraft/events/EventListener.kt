@@ -93,6 +93,16 @@ class EventListener(private val plugin: ReplaceCraftPlugin): Listener {
                             }
                             else {
                                 it.inventory.addItem(ItemStack(resultItem.type, amount))
+                                for(i in 1 until cInv.size) {
+                                    val item = cInv.getItem(i)
+
+                                    if(item != null && 0 < item.amount - (amount / resultItem.amount)) {
+                                        cInv.setItem(i, ItemStack(resultItem.type, checkItemAmount(resultItem, item.amount - (amount / resultItem.amount))))
+                                    }
+                                    else {
+                                        cInv.setItem(i, ItemStack(Material.AIR))
+                                    }
+                                }
                             }
                         }
                         else {

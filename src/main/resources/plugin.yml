@@ -1,5 +1,5 @@
 name: ReplaceCraft
-version: 1.4.0
+version: 1.4.1
 main: net.kunmc.lab.replacecraft.ReplaceCraftPlugin
 api-version: 1.16
 author: stcYps
