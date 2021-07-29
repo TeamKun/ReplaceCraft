@@ -11,9 +11,12 @@ class TabCompleter(plugin: ReplaceCraftPlugin): TabCompleter {
     }
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): MutableList<String>? {
-        val result: MutableList<String> = mutableListOf()
+        var result: MutableList<String> = mutableListOf()
         if(args.size == 1) {
             result.addAll(listOf("on", "off"))
+            result = result.filter {
+                it.startsWith(args[0])
+            }.toMutableList()
         }
         else {
             result.clear()
